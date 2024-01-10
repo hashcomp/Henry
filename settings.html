@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .delete-btn {
+      cursor: pointer;
+      color: red;
+    }
+    .color-box {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      border: 1px solid #000;
+    }
+
+    @media only screen and (max-width: 600px) {
+      body {
+        font-size: 14px;
+      }
+      table {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>🔧 Settings</h1>
+
+<form id="linkForm">
+  <label for="link">Shortcut URL:</label>
+  <input type="text" id="link" required>
+  <label for="emoji">Emoji:</label>
+  <input type="text" id="emoji" required>
+  <label for="color">Color:</label>
+  <select id="color">
+    <option value="#FF0000">Red</option>
+    <option value="#00FF00">Green</option>
+    <option value="#0000FF">Blue</option>
+    <option value="#FFFF00">Yellow</option>
+    <option value="#FF00FF">Magenta</option>
+    <option value="#00FFFF">Cyan</option>
+  </select>
+  <label for="name">Name:</label>
+  <input type="text" id="name" required>
+  <label for="startTime">Start Time:</label>
+  <input type="time" id="startTime" required>
+  <label for="endTime">End Time:</label>
+  <input type="time" id="endTime" required>
+  <button type="button" onclick="addLink()">Add Shortcut</button>
+</form>
+
+<table id="linkTable">
+  <tr>
+    <th>Link</th>
+    <th>Emoji</th>
+    <th>Color</th>
+    <th>Name</th>
+    <th>Time Range</th>
+    <th>Action</th>
+  </tr>
+</table>
+
+  <button type="button" onclick="exportLinks()">Export Shortcuts</button>
+  <button type="button" onclick="importLinks()">Import Shortcuts</button>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const links = JSON.parse(localStorage.getItem('links')) || [];
+    links.forEach(link => addLinkToTable(link));
+  });
+
+  function addLink() {
+    const link = document.getElementById('link').value;
+    const emoji = document.getElementById('emoji').value;
+    const color = document.getElementById('color').value;
+    const name = document.getElementById('name').value;
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+
+    if (link && emoji && color && name && startTime && endTime) {
+      const newLink = {
+        link,
+        emoji,
+        color,
+        name,
+        startTime,
+        endTime
+      };
+
+      addLinkToTable(newLink);
+
+      const links = JSON.parse(localStorage.getItem('links')) || [];
+      links.push(newLink);
+      localStorage.setItem('links', JSON.stringify(links));
+
+      document.getElementById('linkForm').reset();
+    } else {
+      alert('Please fill in all fields.');
+    }
+  }
+
+  function addLinkToTable(newLink) {
+    const table = document.getElementById('linkTable');
+    const newRow = table.insertRow(-1);
+
+    const linkCell = newRow.insertCell(0);
+    const emojiCell = newRow.insertCell(1);
+    const colorCell = newRow.insertCell(2);
+    const nameCell = newRow.insertCell(3);
+    const timeCell = newRow.insertCell(4);
+    const actionCell = newRow.insertCell(5);
+
+    linkCell.innerHTML = `<a href="${newLink.link}" target="_blank">${newLink.link}</a>`;
+    emojiCell.innerHTML = newLink.emoji;
+    emojiCell.style.color = newLink.color;
+    colorCell.innerHTML = `<div class="color-box" style="background-color:${newLink.color};"></div>`;
+    nameCell.innerText = newLink.name;
+    timeCell.innerText = `${newLink.startTime} - ${newLink.endTime}`;
+    actionCell.innerHTML = '<span class="delete-btn" onclick="deleteRow(this)">❌ Delete</span>';
+  }
+
+  function deleteRow(btn) {
+    const row = btn.parentNode.parentNode;
+    const linkTable = document.getElementById('linkTable');
+    const rowIndex = row.rowIndex - 1;
+    linkTable.deleteRow(rowIndex);
+
+    const links = JSON.parse(localStorage.getItem('links')) || [];
+    links.splice(rowIndex, 1);
+    localStorage.setItem('links', JSON.stringify(links));
+  }
+  function exportLinks() {
+    const links = JSON.parse(localStorage.getItem('links')) || [];
+    const exportData = JSON.stringify(links);
+
+    const blob = new Blob([exportData], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = 'shortcut_export.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+  function importLinks() {
+    const input = document.createElement('input');
+    input.type = 'file';
+
+    input.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const importedLinks = JSON.parse(e.target.result);
+          localStorage.setItem('links', JSON.stringify(importedLinks));
+
+          // Clear existing table and populate with imported links
+          const table = document.getElementById('linkTable');
+          table.innerHTML = '<tr><th>Link</th><th>Emoji</th><th>Color</th><th>Name</th><th>Time Range</th><th>Action</th></tr>';
+          importedLinks.forEach(link => addLinkToTable(link));
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    input.click();
+  }
+
+</script>
+
+</body>
+</html>

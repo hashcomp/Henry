@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" sizes="526x526" href="logo.png">
+  <link rel="icon" href="logo.png" type="image/x-icon">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <title>Henry</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 6px;
+      color: white;
+      background-color: white;
+    }
+    ul {
+      color: white;
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    li {
+      border-radius: 10px;
+      width: 95%; /* 80% of the page width */
+      padding: 20px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      cursor: pointer;
+      color: white;
+      transition: transform 0.3s ease-in-out;
+      display: flex;
+      align-items: center;
+    }
+    li:hover {
+      transform: scale(1.05);
+    }
+    .color-box {
+      color: white;
+      width: 30px;
+      height: 30px;
+      margin-right: 10px;
+      border: 1px solid #000;
+    }
+    a {
+      color: white;
+      text-decoration: none;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <center>
+    <ul id="linkList"></ul>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        displayLinks();
+      });
+
+      function displayLinks() {
+        const linkList = document.getElementById('linkList');
+        let links = JSON.parse(localStorage.getItem('links')) || [];
+
+        const settingsLink = links.find(link => link.link === 'settings.html');
+
+        if (!settingsLink) {
+          const newSettingsLink = {
+            link: 'settings.html',
+            emoji: '🔧',
+            name: 'Settings',
+            color: 'grey'
+          };
+          links.push(newSettingsLink);
+          localStorage.setItem('links', JSON.stringify(links));
+        }
+
+        const shortLink = links.find(link => link.link === 'shortcuts.html');
+
+        if (!shortLink) {
+          const newshortLink = {
+            link: 'shortcuts.html',
+            emoji: '🤖',
+            name: 'Shortcuts',
+            color: '#FEDCD2'
+          };
+          links.push(newshortLink);
+          localStorage.setItem('links', JSON.stringify(links));
+        }
+
+        const currentTime = new Date().getTime();
+        const current24Time = getCurrent24HourTime();
+
+        const futureLinks = links.filter(link => {
+          if (link.endTime) {
+            const endTime = parseTime(link.endTime);
+            return endTime >= current24Time;
+          }
+          return false; // Exclude links without a start time
+        });
+
+        const pastAndNoendTimeLinks = links.filter(link => {
+          if (link.endTime) {
+            const endTime = parseTime(link.endTime);
+            return endTime < current24Time;
+          }
+          return true; // Keep links without a start time
+        });
+
+        futureLinks.sort((a, b) => {
+          return parseTime(a.endTime) - parseTime(b.endTime);
+        });
+
+        linkList.innerHTML = '';
+
+        futureLinks.forEach(link => {
+          const listItem = createListItem(link);
+          linkList.appendChild(listItem);
+        });
+
+        pastAndNoendTimeLinks.forEach(link => {
+          const listItem = createListItem(link);
+          linkList.appendChild(listItem);
+        });
+      }
+
+      function getCurrent24HourTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        return parseInt(hours + minutes);
+      }
+
+      function parseTime(time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 100 + minutes;
+      }
+
+      function createListItem(link) {
+        const listItem = document.createElement('li');
+        listItem.style.backgroundColor = link.color || '#ffffff'; // Default color if not available
+
+        listItem.innerHTML = `
+          <b><a href="${link.link}" target="_blank">${link.emoji} ${link.name}</a></b>
+        `;
+        
+        listItem.addEventListener('click', () => {
+          window.open(link.link, '_blank');
+        });
+
+        return listItem;
+      }
+    </script>
+  </center>
+</body>
+</html>

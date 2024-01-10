@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shortcuts</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🤖 Shortcuts</h1><hr>
+  <h2>Message Shortcut</h2>
+
+  <label for="numbers">Enter Phone Numbers (comma-separated):</label>
+  <input type="text" id="numbers" placeholder="e.g., 1234567890,9876543210">
+
+  <label for="message">Enter Message:</label>
+  <textarea id="message" placeholder="Type your message here"></textarea>
+
+  <button onclick="generateLink()">Generate SMS Link</button>
+
+  <p id="result"></p>
+
+  <script>
+    function generateLink() {
+      const numbersInput = document.getElementById('numbers').value;
+      const messageInput = encodeURIComponent(document.getElementById('message').value);
+
+      if (numbersInput && messageInput) {
+        const numbersArray = numbersInput.split(',');
+        const smsLink = `sms://open?addresses=${numbersArray.join(',')}&body=${messageInput}`;
+
+        document.getElementById('result').innerHTML = `<strong>Generated Link:</strong> <a href="${smsLink}" target="_blank">${smsLink}</a>`;
+      } else {
+        document.getElementById('result').innerHTML = '<span style="color: red;">Please enter valid numbers and message.</span>';
+      }
+    }
+  </script>
+
+</body>
+</html>
